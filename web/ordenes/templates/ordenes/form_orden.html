@@ -1,0 +1,47 @@
+{% extends "ordenes/base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="migas"><a href="{% url 'lista_ordenes' %}">Órdenes</a><span>/</span><span>{{ titulo }}</span></div>
+
+<div class="page-head">
+  <div>
+    <h1>{{ titulo }}</h1>
+    {% if orden %}<p class="sub">Orden #{{ orden.id }} · {{ orden.cliente }}</p>{% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <form method="post" action="{{ accion }}">
+      {% csrf_token %}
+      <div class="form-grid">
+        <div class="campo">
+          <label for="cliente">Cliente</label>
+          <input type="text" id="cliente" name="cliente" maxlength="120" required
+                 placeholder="Nombre del cliente"
+                 value="{% if valores %}{{ valores.cliente }}{% endif %}">
+        </div>
+        <div class="campo">
+          <label for="fecha">Fecha</label>
+          <input type="date" id="fecha" name="fecha" required
+                 value="{% if valores %}{{ valores.fecha }}{% endif %}">
+        </div>
+        <div class="campo">
+          <label for="estado">Estado</label>
+          <select id="estado" name="estado">
+            {% for e in estados %}
+            <option value="{{ e }}"
+              {% if valores and valores.estado == e %}selected{% endif %}>{{ e }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="form-foot">
+        <button class="btn" type="submit">{{ boton }}</button>
+        <a class="btn btn-sec" href="{% url 'lista_ordenes' %}">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

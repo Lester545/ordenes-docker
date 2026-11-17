@@ -1,0 +1,52 @@
+{% extends "ordenes/base.html" %}
+{% block title %}Órdenes{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Órdenes de venta</h1>
+    <p class="sub">{{ ordenes|length }} órdenes registradas</p>
+  </div>
+  <a class="btn" href="{% url 'nueva_orden' %}">Nueva orden</a>
+</div>
+
+<div class="card">
+  {% if ordenes %}
+  <table>
+    <thead>
+      <tr>
+        <th class="col-id">ID</th>
+        <th>Cliente</th>
+        <th>Fecha</th>
+        <th>Estado</th>
+        <th class="num">Total</th>
+        <th class="col-acciones"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for o in ordenes %}
+      <tr>
+        <td class="col-id mono">{{ o.id }}</td>
+        <td><a href="{% url 'detalle_orden' o.id %}">{{ o.cliente }}</a></td>
+        <td class="mono">{{ o.fecha }}</td>
+        <td><span class="tag tag-{{ o.estado|lower }}">{{ o.estado }}</span></td>
+        <td class="num mono">{{ o.total|floatformat:2 }}</td>
+        <td class="col-acciones">
+          <span class="acciones">
+            <a class="btn btn-mini" href="{% url 'detalle_orden' o.id %}">Ver</a>
+            <a class="btn btn-mini" href="{% url 'editar_orden' o.id %}">Editar</a>
+            <a class="btn btn-mini btn-mini-peligro" href="{% url 'eliminar_orden' o.id %}">Eliminar</a>
+          </span>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">
+    Todavía no hay órdenes registradas.<br>
+    <a href="{% url 'nueva_orden' %}">Crear la primera orden</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

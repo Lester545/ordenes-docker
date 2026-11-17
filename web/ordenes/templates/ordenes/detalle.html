@@ -1,0 +1,89 @@
+{% extends "ordenes/base.html" %}
+{% block title %}Orden #{{ orden.id }}{% endblock %}
+
+{% block content %}
+<div class="migas"><a href="{% url 'lista_ordenes' %}">Órdenes</a><span>/</span><span>Orden #{{ orden.id }}</span></div>
+
+<div class="page-head">
+  <div>
+    <h1>Orden #{{ orden.id }}</h1>
+    <p class="sub">{{ orden.cliente }}</p>
+  </div>
+  <div class="acciones">
+    <a class="btn btn-sec" href="{% url 'editar_orden' orden.id %}">Editar orden</a>
+    <a class="btn" href="{% url 'nuevo_detalle' orden.id %}">Agregar detalle</a>
+    <a class="btn btn-sec" href="{% url 'eliminar_orden' orden.id %}">Eliminar</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <dl class="ficha">
+      <div>
+        <dt>Cliente</dt>
+        <dd>{{ orden.cliente }}</dd>
+      </div>
+      <div>
+        <dt>Fecha</dt>
+        <dd class="mono">{{ orden.fecha }}</dd>
+      </div>
+      <div>
+        <dt>Estado</dt>
+        <dd><span class="tag tag-{{ orden.estado|lower }}">{{ orden.estado }}</span></dd>
+      </div>
+      <div>
+        <dt>Total</dt>
+        <dd class="total mono">{{ orden.total|floatformat:2 }}</dd>
+      </div>
+    </dl>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <h2>Lineas de detalle</h2>
+    <a class="btn btn-mini" href="{% url 'nuevo_detalle' orden.id %}">Agregar linea</a>
+  </div>
+
+  {% if detalles %}
+  <table>
+    <thead>
+      <tr>
+        <th class="col-id">ID</th>
+        <th>Producto</th>
+        <th class="num">Cantidad</th>
+        <th class="num">Precio unitario</th>
+        <th class="num">Subtotal</th>
+        <th class="col-acciones"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for d in detalles %}
+      <tr>
+        <td class="col-id mono">{{ d.id }}</td>
+        <td>{{ d.producto }}</td>
+        <td class="num mono">{{ d.cantidad }}</td>
+        <td class="num mono">{{ d.precio_unitario|floatformat:2 }}</td>
+        <td class="num mono">{{ d.subtotal|floatformat:2 }}</td>
+        <td class="col-acciones">
+          <span class="acciones">
+            <a class="btn btn-mini" href="{% url 'editar_detalle' d.id %}">Editar</a>
+            <a class="btn btn-mini btn-mini-peligro" href="{% url 'eliminar_detalle' d.id %}">Eliminar</a>
+          </span>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="pie-total">
+    <span>Total de la orden</span>
+    <span class="mono">{{ orden.total|floatformat:2 }}</span>
+  </div>
+  {% else %}
+  <div class="empty">
+    Esta orden todavia no tiene lineas de detalle.<br>
+    <a href="{% url 'nuevo_detalle' orden.id %}">Agregar la primera linea</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

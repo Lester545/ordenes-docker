@@ -1,0 +1,16 @@
+# Entorno local con secretos: nunca se sube al repositorio.
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Django
+staticfiles/
+*.log
+
+# Sistema
+.DS_Store
+Thumbs.db

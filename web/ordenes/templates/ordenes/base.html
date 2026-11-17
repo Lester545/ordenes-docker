@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Órdenes{% endblock %} · ÓrdenesDB</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --bg:        #f6f7f8;
+    --surface:   #ffffff;
+    --surface-2: #fafbfc;
+    --ink:       #0f1317;
+    --ink-2:     #4a525b;
+    --muted:     #858d96;
+    --line:      #e6e9ec;
+    --line-soft: #f0f2f4;
+    --accent:    #1f507d;
+    --accent-2:  #173f64;
+    --accent-bg: #e3edf7;
+    --azul-suave: #3a6f9b;
+    --azul-suave-2: #2d5a80;
+    --ok-bg:     #e8f2eb;  --ok-ink:  #22674a;
+    --warn-bg:   #faf2e5;  --warn-ink: #8a5f1f;
+    --bad-bg:    #f9ebeb;  --bad-ink:  #9c3838;
+    --r:  6px;
+    --r-sm: 4px;
+    --shadow: 0 1px 2px rgba(15, 19, 23, .04);
+  }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* --------------------------------------------------------- cabecera */
+  .topbar {
+    background: var(--azul-suave);
+    border-bottom: 1px solid var(--azul-suave-2);
+  }
+  .topbar-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 26px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .brand {
+    font-weight: 620;
+    font-size: 15.5px;
+    letter-spacing: -0.005em;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .brand::before {
+    content: "";
+    width: 7px; height: 7px;
+    border-radius: 2px;
+    background: #ffffff;
+  }
+  .brand em {
+    font-style: normal;
+    color: rgba(255,255,255,.68);
+    font-weight: 400;
+    padding-left: 9px;
+    border-left: 1px solid rgba(255,255,255,.28);
+  }
+  .topbar nav { display: flex; gap: 20px; margin-left: auto; }
+  .topbar nav a {
+    color: rgba(255,255,255,.72);
+    font-size: 14.5px;
+    padding: 3px 0;
+    border-bottom: 1.5px solid transparent;
+    transition: color .12s ease, border-color .12s ease;
+  }
+  .topbar nav a:hover { color: #ffffff; text-decoration: none; }
+  .topbar nav a.on { color: #ffffff; border-bottom-color: #ffffff; }
+
+  main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 36px 26px 76px;
+  }
+
+  /* ----------------------------------------------------------- titulo */
+  .page-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 640;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+  }
+  .sub {
+    margin: 5px 0 0;
+    color: #626b74;
+    font-size: 14px;
+  }
+  .migas {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .migas a { color: var(--ink-2); }
+  .migas a:hover { color: var(--ink); }
+
+  /* ---------------------------------------------------------- tarjetas */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    box-shadow: var(--shadow);
+    margin-bottom: 18px;
+    overflow: hidden;
+  }
+  .card-head {
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--line-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .card-head h2 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 620;
+    letter-spacing: 0.01em;
+    color: var(--ink-2);
+  }
+  .card-body { padding: 22px 20px; }
+
+  /* ----------------------------------------------------------- tablas */
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    text-align: left;
+    font-size: 13px;
+    font-weight: 620;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #ffffff;
+    padding: 0 20px 12px;
+    background: var(--azul-suave);
+    border-bottom: 1px solid #2d5a80;
+    white-space: nowrap;
+  }
+  tbody td {
+    padding: 16px 20px;
+    border-bottom: 1px solid #cfd5db;
+    vertical-align: middle;
+    background: #f7f8f9;
+    color: var(--ink);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr { transition: background .1s ease; }
+  tbody tr:hover td { background: #f0f2f4; }
+  tbody td a { color: var(--ink); font-weight: 520; }
+  tbody td a:hover { color: var(--accent); text-decoration: underline; }
+  .num { text-align: right; white-space: nowrap; }
+  .mono { font-variant-numeric: tabular-nums; }
+  .col-id { color: var(--muted); width: 1%; }
+  thead th.col-id { color: #ffffff; }
+  .col-acciones { width: 1%; white-space: nowrap; text-align: right; }
+  .empty { padding: 44px 18px; text-align: center; color: var(--muted); }
+  .empty a { font-weight: 550; }
+
+  /* ---------------------------------------------------------- insignias */
+  .tag {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 3px;
+    font-size: 12.5px;
+    font-weight: 560;
+    letter-spacing: 0.005em;
+    white-space: nowrap;
+  }
+  .tag-pendiente { background: var(--warn-bg); color: var(--warn-ink); }
+  .tag-pagada    { background: var(--ok-bg);   color: var(--ok-ink); }
+  .tag-anulada   { background: var(--bad-bg);  color: var(--bad-ink); }
+
+  /* ---------------------------------------------------------- botones */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 34px;
+    padding: 0 14px;
+    border: 1px solid transparent;
+    border-radius: var(--r-sm);
+    background: var(--azul-suave);
+    color: #fff;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 540;
+    letter-spacing: -0.003em;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .12s ease, border-color .12s ease, color .12s ease;
+  }
+  .btn:hover { background: var(--azul-suave-2); text-decoration: none; color: #fff; }
+  .btn-sec {
+    background: var(--surface);
+    color: var(--ink-2);
+    border-color: var(--line);
+  }
+  .btn-sec:hover { background: var(--surface-2); color: var(--ink); border-color: #d9dde1; }
+  .btn-peligro { background: var(--bad-ink); }
+  .btn-peligro:hover { background: #853030; }
+
+  .btn-mini {
+    display: inline-flex;
+    align-items: center;
+    height: 29px;
+    padding: 0 11px;
+    font-size: 13px;
+    font-weight: 540;
+    background: var(--accent-bg);
+    color: var(--accent);
+    border: 1px solid transparent;
+    border-radius: var(--r-sm);
+    transition: background .12s ease, color .12s ease;
+  }
+  .btn-mini:hover { background: #d2e2f1; color: var(--accent-2); text-decoration: none; }
+  .btn-mini-peligro { background: var(--bad-bg); color: var(--bad-ink); }
+  .btn-mini-peligro:hover { background: #f3dede; color: var(--bad-ink); }
+
+  .acciones { display: inline-flex; gap: 6px; }
+
+  /* ---------------------------------------------------------- alertas */
+  .alert {
+    padding: 11px 14px;
+    border-radius: var(--r-sm);
+    font-size: 13.5px;
+    margin-bottom: 16px;
+    border: 1px solid transparent;
+  }
+  .alert-bad { background: var(--bad-bg); color: var(--bad-ink); border-color: #eed3d3; }
+  .alert-ok  { background: var(--ok-bg);  color: var(--ok-ink);  border-color: #d3e6da; }
+
+  /* ---------------------------------------------------------- forms */
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .campo { display: flex; flex-direction: column; gap: 6px; }
+  .campo label {
+    font-size: 12px;
+    font-weight: 580;
+    color: var(--ink-2);
+    letter-spacing: 0.005em;
+  }
+  .campo input, .campo select {
+    height: 34px;
+    padding: 0 10px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    font: inherit;
+    font-size: 13.5px;
+    background: var(--surface);
+    color: var(--ink);
+    width: 100%;
+    transition: border-color .12s ease, box-shadow .12s ease;
+  }
+  .campo input::placeholder { color: #a8aeb5; }
+  .campo input:focus, .campo select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(31, 80, 125, .12);
+  }
+  .form-foot {
+    margin-top: 22px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line-soft);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  /* ----------------------------------------------------- ficha detalle */
+  .ficha {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 20px 28px;
+    margin: 0;
+  }
+  .ficha dt {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    font-weight: 620;
+    margin-bottom: 4px;
+  }
+  .ficha dd { margin: 0; font-size: 14.5px; }
+  .total {
+    font-size: 19px;
+    font-weight: 640;
+    letter-spacing: -0.025em;
+  }
+  .pie-total {
+    padding: 13px 18px;
+    border-top: 1px solid var(--line);
+    background: var(--surface-2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13.5px;
+    font-weight: 580;
+    color: var(--ink-2);
+  }
+  .pie-total .mono { font-size: 15px; font-weight: 640; color: var(--ink); }
+
+  @media (max-width: 620px) {
+    main { padding: 24px 16px 56px; }
+    .topbar-inner { padding: 0 16px; }
+    .page-head { flex-direction: column; align-items: stretch; }
+    .acciones { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">ÓrdenesDB <em>Grupo 5</em></div>
+    <nav>
+      <a href="{% url 'lista_ordenes' %}" class="{% if request.resolver_match.url_name == 'lista_ordenes' %}on{% endif %}">Órdenes</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  {% if error %}<div class="alert alert-bad">{{ error }}</div>{% endif %}
+  {% if ok %}<div class="alert alert-ok">{{ ok }}</div>{% endif %}
+  {% block content %}{% endblock %}
+</main>
+
+</body>
+</html>

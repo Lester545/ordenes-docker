@@ -1,0 +1,125 @@
+# =====================================================================
+#  Ordenes de venta en tres contenedores  -  Grupo 5
+# =====================================================================
+
+name: ordenes-docker
+
+services:
+
+  # ------------------------------------------------- base de datos
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    hostname: db
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      MSSQL_PID: Developer
+    volumes:
+      # Volumen con nombre: los datos sobreviven a "docker compose down".
+      - db-datos:/var/opt/mssql
+    networks:
+      - red-ordenes
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q \"SELECT 1\" > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 25s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "1.50"
+          memory: 2G
+
+  # ------------------------------------- inicializacion de la base
+  # Ejecuta db/init.sql una sola vez (es idempotente) y termina.
+  db-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+    volumes:
+      - ./db:/init:ro
+    networks:
+      - red-ordenes
+    entrypoint: ["/bin/bash", "/init/init.sh"]
+    restart: "no"
+
+  # ------------------------------------------------------ API (Flask)
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    image: ${DOCKERHUB_USER:-usuario}/g5-ordenes-api:v1.0
+    hostname: api
+    environment:
+      # El servidor es el nombre del servicio: lo resuelve el DNS de Docker.
+      DB_SERVER: db
+      DB_PORT: "1433"
+      DB_USER: sa
+      DB_PASSWORD: ${MSSQL_SA_PASSWORD}
+      DB_NAME: OrdenesDB
+    depends_on:
+      db:
+        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
+    networks:
+      - red-ordenes
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request as u; u.urlopen('http://localhost:5000/health', timeout=3)\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.75"
+          memory: 512M
+
+  # ------------------------------------------------- Web (Django)
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    image: ${DOCKERHUB_USER:-usuario}/g5-ordenes-web:v1.0
+    hostname: web
+    environment:
+      # El frontend solo conoce la direccion de la API, nunca la base.
+      API_URL: http://api:5000
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      DJANGO_ALLOWED_HOSTS: "*"
+      DJANGO_DEBUG: "0"
+    ports:
+      # Unico servicio que publica puerto en el equipo.
+      - "8085:8000"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - red-ordenes
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request as u; u.urlopen('http://localhost:8000/', timeout=3)\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 384M
+
+volumes:
+  db-datos:
+
+networks:
+  red-ordenes:
+    name: red-ordenes
+    driver: bridge
